@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Operation Baaz - Mock Test Portal</title>
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -71,7 +70,6 @@
 
     <div class="container">
         
-        <!-- SCREEN 1: AUTHENTICATION -->
         <div id="scr-auth" class="screen active">
             <div class="card">
                 <h2 id="auth-title">Operation Baaz Login</h2>
@@ -97,7 +95,6 @@
             </div>
         </div>
 
-        <!-- SCREEN 2: STUDENT DASHBOARD -->
         <div id="scr-dashboard" class="screen">
             <div class="card flex-between">
                 <div>
@@ -113,7 +110,6 @@
             </div>
         </div>
 
-        <!-- SCREEN 3: MOCK QUIZ ENGINE -->
         <div id="scr-quiz" class="screen">
             <div class="quiz-header flex-between">
                 <div>
@@ -142,7 +138,6 @@
             </div>
         </div>
 
-        <!-- SCREEN 4: RESULT DASHBOARD -->
         <div id="scr-result" class="screen">
             <div class="card" style="text-align: center;">
                 <h2 style="color: var(--success);">Test Completed successfully!</h2>
@@ -245,184 +240,4 @@
 
         function logout() { auth.signOut().then(() => showScreen('scr-auth')); }
 
-        function loadAvailableMocks() {
-            const container = document.getElementById('mock-list-container');
-            container.innerHTML = "<p>Scanning cloud deployment for tests...</p>";
-
-            db.collection('mocks').where('status', '==', 'active').get().then(snapshot => {
-                if(snapshot.empty) {
-                    container.innerHTML = "<p>No active tests distributed yet.</p>";
-                    return;
-                }
-                container.innerHTML = "";
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    container.innerHTML += `
-                        <div class="card mock-item flex-between">
-                            <div>
-                                <h3>${data.title}</h3>
-                                <p style="margin:0;">Subject: ${data.subject} | Duration: ${data.timer} Mins</p>
-                            </div>
-                            <button class="btn" style="width:auto; padding:10px 20px;" onclick="startMockExam('${doc.id}')">Start</button>
-                        </div>
-                    `;
-                });
-            });
-        }
-
-        function startMockExam(mockId) {
-            currentMockId = mockId;
-            userResponses = {};
-            currentQIndex = 0;
-            
-            db.collection('mocks').doc(mockId).get().then(doc => {
-                activeMockConfig = doc.data();
-                document.getElementById('quiz-title').innerText = activeMockConfig.title;
-                document.getElementById('quiz-subject').innerText = `Subject: ${activeMockConfig.subject}`;
-                document.getElementById('marking-label').innerText = `Correct: +${activeMockConfig.posMark || 3} | Neg: -${activeMockConfig.negMark || 1}`;
-                secondsLeft = parseInt(activeMockConfig.timer) * 60;
-                
-                db.collection('questions').where('mockId', '==', mockId).get().then(qSnap => {
-                    if(qSnap.empty) return alert('This mock test contains no questions.');
-                    activeQuestions = [];
-                    qSnap.forEach(qDoc => {
-                        activeQuestions.push({id: qDoc.id, ...qDoc.data()});
-                    });
-                    
-                    initQuizTimer();
-                    renderQuestion();
-                    showScreen('scr-quiz');
-                });
-            });
-        }
-
-        function initQuizTimer() {
-            clearInterval(examTimerInterval);
-            const timerDisplay = document.getElementById('quiz-timer');
-            
-            examTimerInterval = setInterval(() => {
-                if(secondsLeft <= 0) {
-                    clearInterval(examTimerInterval);
-                    alert('Time limit expired! Auto submitting test...');
-                    evaluateAndSubmitQuiz();
-                } else {
-                    secondsLeft--;
-                    const mins = Math.floor(secondsLeft / 60);
-                    const secs = secondsLeft % 60;
-                    timerDisplay.innerText = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-                }
-            }, 1000);
-        }
-
-        function renderQuestion() {
-            if(activeQuestions.length === 0) return;
-            const q = activeQuestions[currentQIndex];
-            
-            document.getElementById('q-number-label').innerText = `Question ${currentQIndex + 1} of ${activeQuestions.length}`;
-            document.getElementById('question-text').innerText = q.text;
-            
-            const optContainer = document.getElementById('options-container');
-            optContainer.innerHTML = "";
-            
-            q.options.forEach((opt, idx) => {
-                const isSelected = userResponses[q.id] === idx;
-                optContainer.innerHTML += `
-                    <div class="option-card ${isSelected ? 'selected' : ''}" onclick="selectUserOption(${idx})">
-                        <strong>${String.fromCharCode(65 + idx)}.</strong> ${opt}
-                    </div>
-                `;
-            });
-
-            document.getElementById('next-btn').innerText = (currentQIndex === activeQuestions.length - 1) ? "Finish" : "Next";
-            renderNavGrid();
-        }
-
-        function selectUserOption(index) {
-            const q = activeQuestions[currentQIndex];
-            userResponses[q.id] = index;
-            renderQuestion();
-        }
-
-        function nextQuestion() {
-            if(currentQIndex < activeQuestions.length - 1) {
-                currentQIndex++;
-                renderQuestion();
-            } else {
-                confirmSubmitQuiz();
-            }
-        }
-
-        function prevQuestion() {
-            if(currentQIndex > 0) {
-                currentQIndex--;
-                renderQuestion();
-            }
-        }
-
-        function renderNavGrid() {
-            const grid = document.getElementById('question-nav-grid');
-            grid.innerHTML = "";
-            activeQuestions.forEach((q, idx) => {
-                const isAnswered = userResponses[q.id] !== undefined;
-                const isCurrent = idx === currentQIndex;
-                grid.innerHTML += `
-                    <div class="nav-num ${isAnswered ? 'answered' : ''} ${isCurrent ? 'current' : ''}" onclick="jumpToQuestion(${idx})">
-                        ${idx + 1}
-                    </div>
-                `;
-            });
-        }
-
-        function jumpToQuestion(idx) {
-            currentQIndex = idx;
-            renderQuestion();
-        }
-
-        function confirmSubmitQuiz() {
-            if(confirm("Are you sure you want to end this test?")) {
-                evaluateAndSubmitQuiz();
-            }
-        }
-
-        function evaluateAndSubmitQuiz() {
-            clearInterval(examTimerInterval);
-            let score = 0;
-            let correctCount = 0;
-            let wrongCount = 0;
-
-            const pos = parseFloat(activeMockConfig.posMark || 3);
-            const neg = parseFloat(activeMockConfig.negMark || 1);
-
-            activeQuestions.forEach(q => {
-                const userAns = userResponses[q.id];
-                if(userAns !== undefined) {
-                    if(userAns === parseInt(q.correct)) {
-                        correctCount++;
-                        score += pos;
-                    } else {
-                        wrongCount++;
-                        score -= neg;
-                    }
-                }
-            });
-
-            const resultPayload = {
-                uid: auth.currentUser.uid,
-                mockId: currentMockId,
-                mockTitle: activeMockConfig.title,
-                score: score,
-                correct: correctCount,
-                wrong: wrongCount,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            db.collection('results').add(resultPayload).then(() => {
-                document.getElementById('res-score').innerText = `${score} Marks`;
-                document.getElementById('res-correct').innerText = correctCount;
-                document.getElementById('res-wrong').innerText = wrongCount;
-                showScreen('scr-result');
-            });
-        }
-    </script>
-</body>
-</html>
+        function loadAvailable
