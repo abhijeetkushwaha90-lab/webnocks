@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Operation Baaz - Admin Console</title>
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -48,7 +47,6 @@
 
     <div class="container">
         
-        <!-- LOGIN PANEL -->
         <div id="panel-login" class="card panel active">
             <h2>Operation Baaz Admin</h2>
             <p>Access command controls</p>
@@ -64,14 +62,12 @@
             <button class="btn" onclick="loginAdmin()">Authorize Control Panel</button>
         </div>
 
-        <!-- CONTROL PANEL -->
         <div id="panel-control" class="card panel">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2>Control Dashboard</h2>
                 <button onclick="location.reload()" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.9rem;">Logout</button>
             </div>
 
-            <!-- STEP A: CREATE MOCK SHEET -->
             <div id="sec-mock-config" style="border-bottom: 1px dashed var(--border); padding-bottom: 25px; margin-bottom: 25px;">
                 <span class="step-badge">STEP A: INITIALIZE MOCK CONFIG</span>
                 <div class="form-group">
@@ -101,7 +97,6 @@
                 <button class="btn" style="background:#10b981; color:white;" onclick="lockMockConfig()">Lock & Create Mock Sheet</button>
             </div>
 
-            <!-- STEP B: INJECT QUESTIONS -->
             <div id="sec-question-config" style="opacity: 0.4; pointer-events: none;">
                 <span class="step-badge">STEP B: INJECT QUESTIONS</span>
                 <p id="active-mock-status" style="margin-bottom: 15px; color: #10b981; font-weight: 600;">No active mock initialized yet.</p>
