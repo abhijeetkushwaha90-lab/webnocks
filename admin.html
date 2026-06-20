@@ -3,223 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operation Baaz - Admin Console</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <title>Operation Baaz - Admin Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root {
-            --bg: #0b0f19;
-            --surface: #151f32;
-            --accent: #f59e0b;
-            --accent-hover: #d97706;
-            --success: #10b981;
-            --text: #f8fafc;
-            --muted: #94a3b8;
-            --border: #233554;
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background: var(--bg); color: var(--text); padding: 20px; min-height: 100vh; }
-        
-        .container { max-width: 700px; margin: 40px auto; }
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 30px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.4); }
-        
-        h2 { margin-bottom: 5px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
-        p { color: var(--muted); margin-bottom: 25px; font-size: 0.95rem; }
-
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-        input, select, textarea { width: 100%; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: #fff; outline: none; font-size: 1rem; transition: border 0.2s; }
-        input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; background: var(--accent); color: #0b0f19; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-        .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
-        
-        .panel { display: none; }
-        .panel.active { display: block; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .step-badge { background: var(--border); color: var(--accent); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+        .form-card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+        }
     </style>
 </head>
-<body>
+<body class="min-h-screen p-6">
 
-    <div class="container">
-        
-        <div id="panel-login" class="card panel active">
-            <h2>Operation Baaz Admin</h2>
-            <p>Access command controls</p>
+    <div class="max-w-4xl mx-auto">
+        <!-- HEADER -->
+        <header class="flex justify-between items-center bg-[#161b22] border border-[#30363d] rounded-xl p-6 mb-8 shadow-xl">
+            <div>
+                <h1 class="text-3xl font-bold text-white flex items-center gap-3">
+                    <i class="fas fa-user-shield text-blue-500"></i> Operation Baaz <span class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-full font-normal">Admin Panel</span>
+                </h1>
+                <p class="text-sm text-gray-400 mt-1">Add and manage mock test papers for students.</p>
+            </div>
+            <a href="index.html" class="bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-gray-200 px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 text-sm">
+                <i class="fas fa-arrow-left"></i> Student Portal
+            </a>
+        </header>
+
+        <!-- ADD NEW TEST FORM -->
+        <div class="form-card rounded-xl p-8 shadow-xl mb-8">
+            <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <i class="fas fa-plus-circle text-emerald-500"></i> Upload New Mock Test
+            </h2>
             
-            <div class="form-group">
-                <label>Admin Email</label>
-                <input type="email" id="email" placeholder="admin@webnocks.work">
-            </div>
-            <div class="form-group">
-                <label>Security Password</label>
-                <input type="password" id="password" placeholder="••••••••">
-            </div>
-            <button class="btn" onclick="loginAdmin()">Authorize Control Panel</button>
+            <form id="add-test-form" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Test Title / Name</label>
+                    <input type="text" id="test-title" required class="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition" placeholder="e.g., Mathematics Mock Test - 01">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Short Description</label>
+                    <textarea id="test-desc" required rows="3" class="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition resize-none" placeholder="Enter basic details about topics covered, timing, or rules..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Exam URL / Live Link</label>
+                    <input type="url" id="test-link" required class="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition font-mono" placeholder="https://google.com/forms/... or external exam URL">
+                </div>
+                
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-emerald-500/20 transition cursor-pointer flex items-center justify-center gap-2">
+                    <i class="fas fa-cloud-upload-alt"></i> Publish Live Test
+                </button>
+            </form>
         </div>
 
-        <div id="panel-control" class="card panel">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2>Control Dashboard</h2>
-                <button onclick="location.reload()" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.9rem;">Logout</button>
+        <!-- RECENTLY PUBLISHED TESTS -->
+        <div>
+            <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                <i class="fas fa-list text-blue-500"></i> Live Tests History
+            </h2>
+            <div id="admin-tests-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Admin tests track record -->
             </div>
-
-            <div id="sec-mock-config" style="border-bottom: 1px dashed var(--border); padding-bottom: 25px; margin-bottom: 25px;">
-                <span class="step-badge">STEP A: INITIALIZE MOCK CONFIG</span>
-                <div class="form-group">
-                    <label>Mock Exam Title</label>
-                    <input type="text" id="mock-title" placeholder="e.g., UP Police Constable Mock 01">
-                </div>
-                <div class="grid-2">
-                    <div class="form-group">
-                        <label>Subject / Category</label>
-                        <input type="text" id="mock-subject" placeholder="e.g., General Studies">
-                    </div>
-                    <div class="form-group">
-                        <label>Timer Duration (Minutes)</label>
-                        <input type="number" id="mock-timer" placeholder="e.g., 60">
-                    </div>
-                </div>
-                <div class="grid-2">
-                    <div class="form-group">
-                        <label>Positive Marks (+)</label>
-                        <input type="number" id="mock-pos" value="3">
-                    </div>
-                    <div class="form-group">
-                        <label>Negative Marks (-)</label>
-                        <input type="number" id="mock-neg" value="1">
-                    </div>
-                </div>
-                <button class="btn" style="background:#10b981; color:white;" onclick="lockMockConfig()">Lock & Create Mock Sheet</button>
+            <div id="admin-no-tests" class="hidden text-center py-12 form-card rounded-xl">
+                <i class="fas fa-folder-open text-gray-600 text-4xl mb-2"></i>
+                <p class="text-gray-400">No mock tests published yet.</p>
             </div>
-
-            <div id="sec-question-config" style="opacity: 0.4; pointer-events: none;">
-                <span class="step-badge">STEP B: INJECT QUESTIONS</span>
-                <p id="active-mock-status" style="margin-bottom: 15px; color: #10b981; font-weight: 600;">No active mock initialized yet.</p>
-                
-                <div class="form-group">
-                    <label>Question Text</label>
-                    <textarea id="q-text" rows="3" placeholder="Type question content statement here..."></textarea>
-                </div>
-                
-                <div class="grid-2">
-                    <div class="form-group"><label>Option A</label><input type="text" id="opt-0"></div>
-                    <div class="form-group"><label>Option B</label><input type="text" id="opt-1"></div>
-                </div>
-                <div class="grid-2">
-                    <div class="form-group"><label>Option C</label><input type="text" id="opt-2"></div>
-                    <div class="form-group"><label>Option D</label><input type="text" id="opt-3"></div>
-                </div>
-
-                <div class="form-group">
-                    <label>Correct Answer Option</label>
-                    <select id="q-correct">
-                        <option value="0">Option A</option>
-                        <option value="1">Option B</option>
-                        <option value="2">Option C</option>
-                        <option value="3">Option D</option>
-                    </select>
-                </div>
-                <button class="btn" onclick="pushQuestionToCloud()">Push Question to Live Database</button>
-            </div>
-
         </div>
     </div>
 
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
     <script>
+        // BRAND NEW FIREBASE CONFIG CONFIGURATION FOR ADMIN
         const firebaseConfig = {
             apiKey: "AIzaSyBoELSNjBXkjMgtqe3jgOdhNVTu8F8Fx_14",
             authDomain: "operation-baaz.firebaseapp.com",
             projectId: "operation-baaz",
             storageBucket: "operation-baaz.firebasestorage.app",
             messagingSenderId: "229131380430",
-            appId: "1:229131380430:web:6bfd5074729faf73af929f",
-            measurementId: "G-EP5YRKFY1P"
+            appId: "1:229131380430:web:e9b77b1703ee62a1af929f",
+            measurementId: "G-DRNSDYSN6B"
         };
 
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let activeMockId = null;
+        // Elements
+        const addTestForm = document.getElementById('add-test-form');
+        const adminTestsList = document.getElementById('admin-tests-list');
+        const adminNoTests = document.getElementById('admin-no-tests');
 
-        function loginAdmin() {
-            const email = document.getElementById('email').value.trim();
-            const pass = document.getElementById('password').value;
+        // CHALU: FETCH HISTORY ON PAGE LOAD
+        loadAdminTests();
 
-            if(!email || !pass) return alert('Enter credentials fields!');
+        // HANDLE SUBMIT (ADD TEST)
+        addTestForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('test-title').value.trim();
+            const desc = document.getElementById('test-desc').value.trim();
+            const link = document.getElementById('test-link').value.trim();
 
-            auth.signInWithEmailAndPassword(email, pass).then(res => {
-                db.collection('users').doc(res.user.uid).get().then(doc => {
-                    if(doc.exists && doc.data().role === 'admin') {
-                        document.getElementById('panel-login').classList.remove('active');
-                        document.getElementById('panel-control').classList.add('active');
-                    } else {
-                        auth.signOut();
-                        alert('Access Denied! You are not registered as an administrator.');
-                    }
-                });
-            }).catch(err => alert(err.message));
-        }
-
-        function lockMockConfig() {
-            const title = document.getElementById('mock-title').value.trim();
-            const subject = document.getElementById('mock-subject').value.trim();
-            const timer = document.getElementById('mock-timer').value;
-            const posMark = document.getElementById('mock-pos').value;
-            const negMark = document.getElementById('mock-neg').value;
-
-            if(!title || !subject || !timer) return alert('Fill all mock configuration parameters!');
-
-            db.collection('mocks').add({
+            db.collection('tests').add({
                 title: title,
-                subject: subject,
-                timer: timer,
-                posMark: posMark,
-                negMark: negMark,
-                status: 'active',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(docRef => {
-                activeMockId = docRef.id;
-                document.getElementById('active-mock-status').innerText = `Active Session: ${title} (${activeMockId})`;
-                document.getElementById('sec-mock-config').style.opacity = "0.4";
-                document.getElementById('sec-mock-config').style.pointerEvents = "none";
-                document.getElementById('sec-question-config').style.opacity = "1";
-                document.getElementById('sec-question-config').style.pointerEvents = "all";
-                alert('Mock configuration locked successfully! Ready to inject questions.');
-            }).catch(err => alert(err.message));
+                description: desc,
+                link: link,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                alert('Success! Mock Test has been published live for all students.');
+                addTestForm.reset();
+                loadAdminTests(); // refresh history list
+            })
+            .catch(err => {
+                console.error("Firestore Add Error:", err);
+                alert("Database Error: " + err.message);
+            });
+        });
+
+        // LOAD TESTS LIST
+        function loadAdminTests() {
+            adminTestsList.innerHTML = '';
+            db.collection('tests').orderBy('createdAt', 'desc').get().then(snapshot => {
+                if (snapshot.empty) {
+                    adminNoTests.classList.remove('hidden');
+                    return;
+                }
+                
+                adminNoTests.classList.add('hidden');
+                snapshot.forEach(doc => {
+                    const test = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'form-card rounded-xl p-5 shadow-sm border-l-4 border-l-emerald-500 flex flex-col justify-between';
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex justify-between items-start gap-2">
+                                <h3 class="font-bold text-white text-lg line-clamp-1">${test.title || 'Untitled Test'}</h3>
+                                <button onclick="deleteTest('${doc.id}')" class="text-gray-500 hover:text-rose-500 transition px-1.5 py-0.5 text-sm cursor-pointer" title="Delete Test">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                            <p class="text-gray-400 text-xs mt-2 line-clamp-2">${test.description || 'No description.'}</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-[#30363d] flex items-center justify-between text-xs text-gray-500">
+                            <span class="truncate max-w-[180px] font-mono">${test.link}</span>
+                            <a href="${test.link}" target="_blank" class="text-blue-400 hover:underline flex items-center gap-1">
+                                Preview <i class="fas fa-external-link-alt text-[10px]"></i>
+                            </a>
+                        </div>
+                    `;
+                    adminTestsList.appendChild(card);
+                });
+            }).catch(err => {
+                console.error("Error loading admin tests:", err);
+            });
         }
 
-        function pushQuestionToCloud() {
-            const text = document.getElementById('q-text').value.trim();
-            const opts = [
-                document.getElementById('opt-0').value.trim(),
-                document.getElementById('opt-1').value.trim(),
-                document.getElementById('opt-2').value.trim(),
-                document.getElementById('opt-3').value.trim()
-            ];
-            const correct = document.getElementById('q-correct').value;
-
-            if(!text || opts.some(o => !o)) return alert('Complete question statements and options payload!');
-
-            db.collection('questions').add({
-                mockId: activeMockId,
-                text: text,
-                options: opts,
-                correct: correct,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                alert('Question pushed successfully!');
-                document.getElementById('q-text').value = "";
-                document.getElementById('opt-0').value = "";
-                document.getElementById('opt-1').value = "";
-                document.getElementById('opt-2').value = "";
-                document.getElementById('opt-3').value = "";
-            }).catch(err => alert(err.message));
+        // DELETE TEST FUNCTION
+        window.deleteTest = function(docId) {
+            if (confirm("Are you sure you want to remove this mock test from the live student list?")) {
+                db.collection('tests').doc(docId).delete().then(() => {
+                    alert("Test deleted successfully.");
+                    loadAdminTests();
+                }).catch(err => alert("Error deleting: " + err.message));
+            }
         }
     </script>
 </body>
