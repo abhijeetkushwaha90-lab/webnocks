@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Operation Baaz - Student Portal</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -22,10 +20,8 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
-    <!-- Auth Container -->
     <div id="auth-container" class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        <!-- STUDENT LOGIN CARD -->
         <div class="form-card rounded-xl p-8 shadow-xl flex flex-col justify-between">
             <div>
                 <h2 class="text-3xl font-bold text-white mb-2 flex items-center gap-2">
@@ -49,7 +45,6 @@
             </div>
         </div>
 
-        <!-- NEW REGISTRATION CARD -->
         <div class="form-card rounded-xl p-8 shadow-xl border-emerald-900/50 flex flex-col justify-between">
             <div>
                 <h2 class="text-3xl font-bold text-white mb-2 flex items-center gap-2">
@@ -79,7 +74,6 @@
 
     </div>
 
-    <!-- STUDENT DASHBOARD (Hidden Initially) -->
     <div id="dashboard-container" class="hidden w-full max-w-6xl">
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-[#161b22] border border-[#30363d] rounded-xl p-6 mb-6 gap-4">
             <div>
@@ -95,9 +89,7 @@
             <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                 <i class="fas fa-file-alt text-blue-500"></i> Available Mock Tests
             </h2>
-            <div id="tests-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Live tests loading via JS -->
-            </div>
+            <div id="tests-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             <div id="no-tests" class="hidden text-center py-12 form-card rounded-xl">
                 <i class="fas fa-folder-open text-gray-600 text-5xl mb-3"></i>
                 <p class="text-gray-400 text-lg">No mock tests available at the moment.</p>
@@ -105,15 +97,14 @@
         </main>
     </div>
 
-    <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // BRAND NEW FIREBASE CONFIG CONFIGURATION
+        // Sateek configuration jo Firebase Console se mili hai
         const firebaseConfig = {
-            apiKey: "AIzaSyBoELSNjBXkjMgtqe3jgOdhNVTu8F8Fx_14",
+            apiKey: "AIzaSyBOeLSNjBXkjMgtqe3jgOdhNVTu8F0x_14",
             authDomain: "operation-baaz.firebaseapp.com",
             projectId: "operation-baaz",
             storageBucket: "operation-baaz.firebasestorage.app",
@@ -122,12 +113,10 @@
             measurementId: "G-DRNSDYSN6B"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Elements
         const authContainer = document.getElementById('auth-container');
         const dashboardContainer = document.getElementById('dashboard-container');
         const studentNameDisplay = document.getElementById('student-name');
@@ -135,23 +124,15 @@
         const testsList = document.getElementById('tests-list');
         const noTests = document.getElementById('no-tests');
 
-        // Monitor Auth State
         auth.onAuthStateChanged(user => {
             if (user) {
-                // Fetch User Details from Firestore
                 db.collection('students').doc(user.uid).get().then(doc => {
-                    if (doc.exists) {
-                        studentNameDisplay.innerText = doc.data().name || "Student";
-                    } else {
-                        studentNameDisplay.innerText = "Student";
-                    }
+                    studentNameDisplay.innerText = doc.exists ? (doc.data().name || "Student") : "Student";
                     studentEmailDisplay.innerText = user.email;
-                    
                     authContainer.classList.add('hidden');
                     dashboardContainer.classList.remove('hidden');
                     loadMockTests();
                 }).catch(err => {
-                    console.error("Error getting user doc:", err);
                     studentEmailDisplay.innerText = user.email;
                     authContainer.classList.add('hidden');
                     dashboardContainer.classList.remove('hidden');
@@ -163,7 +144,6 @@
             }
         });
 
-        // HANDLE REGISTRATION
         document.getElementById('register-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const name = document.getElementById('register-name').value.trim();
@@ -172,7 +152,6 @@
 
             auth.createUserWithEmailAndPassword(email, password)
                 .then(cred => {
-                    // Save additional data to Firestore
                     return db.collection('students').doc(cred.user.uid).set({
                         name: name,
                         email: email,
@@ -180,33 +159,26 @@
                     });
                 })
                 .then(() => {
-                    alert('Registration Successful! Welcome to the portal.');
+                    alert('Registration Successful!');
                     document.getElementById('register-form').reset();
                 })
                 .catch(err => alert("Firebase: " + err.message));
         });
 
-        // HANDLE LOGIN
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
 
             auth.signInWithEmailAndPassword(email, password)
-                .then(() => {
-                    document.getElementById('login-form').reset();
-                })
+                .then(() => document.getElementById('login-form').reset())
                 .catch(err => alert("Firebase: " + err.message));
         });
 
-        // HANDLE LOGOUT
         document.getElementById('logout-btn').addEventListener('click', () => {
-            auth.signOut().then(() => {
-                window.location.reload();
-            });
+            auth.signOut().then(() => window.location.reload());
         });
 
-        // LOAD MOCK TESTS FROM FIRESTORE
         function loadMockTests() {
             testsList.innerHTML = '';
             db.collection('tests').orderBy('createdAt', 'desc').get().then(snapshot => {
@@ -214,7 +186,6 @@
                     noTests.classList.remove('hidden');
                     return;
                 }
-                
                 noTests.classList.add('hidden');
                 snapshot.forEach(doc => {
                     const test = doc.data();
@@ -223,7 +194,7 @@
                     card.innerHTML = `
                         <div>
                             <h3 class="text-xl font-bold text-white mb-2">${test.title || 'Untitled Test'}</h3>
-                            <p class="text-gray-400 text-sm mb-4 line-clamp-2">${test.description || 'No description provided.'}</p>
+                            <p class="text-gray-400 text-sm mb-4 line-clamp-2">${test.description || 'No description.'}</p>
                         </div>
                         <a href="${test.link || '#'}" target="_blank" class="w-full mt-4 text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition text-sm flex items-center justify-center gap-2">
                             <i class="fas fa-play text-xs"></i> Start Exam
@@ -231,10 +202,7 @@
                     `;
                     testsList.appendChild(card);
                 });
-            }).catch(err => {
-                console.error("Error loading tests:", err);
-                noTests.classList.remove('hidden');
-            });
+            }).catch(() => noTests.classList.remove('hidden'));
         }
     </script>
 </body>
