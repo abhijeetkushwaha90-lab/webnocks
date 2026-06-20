@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Operation Baaz - Mock Test Portal</title>
+    <!-- Firebase SDKs Compat Version -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -45,7 +46,7 @@
         .screen { display: none; }
         .screen.active { display: block; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         
         .mock-item { border-left: 4px solid var(--accent); background: rgba(255,255,255,0.02); padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 10px; }
         
@@ -60,7 +61,8 @@
         .nav-num.answered { background: var(--success); border-color: var(--success); }
         .nav-num.current { border-color: #fff; box-shadow: 0 0 5px #fff; }
 
-        @media(max-width: 600px) {
+        @media(max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
             body { padding: 5px; }
             .card { padding: 15px; }
         }
@@ -70,31 +72,47 @@
 
     <div class="container">
         
+        <!-- SCREEN 1: AUTHENTICATION (DONO FORMS SAMNE) -->
         <div id="scr-auth" class="screen active">
-            <div class="card">
-                <h2 id="auth-title">Operation Baaz Login</h2>
-                <p>Enter your details to sync your mock schedule.</p>
-                
-                <div class="form-group" id="name-group" style="display:none;">
-                    <label>Full Name</label>
-                    <input type="text" id="auth-name" placeholder="John Doe">
+            <h1 style="text-align: center; margin-bottom: 25px; color: var(--accent);">Operation Baaz Portal</h1>
+            <div class="grid-2">
+                <!-- LOGIN FORM -->
+                <div class="card">
+                    <h2>Student Login</h2>
+                    <p>Already registered? Enter your details.</p>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="login-email" placeholder="name@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="login-pass" placeholder="••••••••">
+                    </div>
+                    <button class="btn" onclick="handleLoginDirect()">Login</button>
                 </div>
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" id="auth-email" placeholder="name@example.com">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="auth-pass" placeholder="••••••••">
-                </div>
-                
-                <button class="btn" id="btn-auth-submit" onclick="handleAuth()">Login</button>
-                <div style="margin-top:15px; text-align:center;">
-                    <a href="#" id="auth-toggle" onclick="toggleAuthMode()" style="color:var(--accent); font-size:0.9rem;">Don't have an account? Register</a>
+
+                <!-- REGISTER FORM -->
+                <div class="card" style="border-color: var(--accent);">
+                    <h2>New Registration</h2>
+                    <p>Create your new student profile.</p>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="reg-name" placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="reg-email" placeholder="name@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="reg-pass" placeholder="••••••••">
+                    </div>
+                    <button class="btn" style="background: var(--success);" onclick="handleRegisterDirect()">Register Profile</button>
                 </div>
             </div>
         </div>
 
+        <!-- SCREEN 2: STUDENT DASHBOARD -->
         <div id="scr-dashboard" class="screen">
             <div class="card flex-between">
                 <div>
@@ -110,6 +128,7 @@
             </div>
         </div>
 
+        <!-- SCREEN 3: MOCK QUIZ ENGINE -->
         <div id="scr-quiz" class="screen">
             <div class="quiz-header flex-between">
                 <div>
@@ -138,6 +157,7 @@
             </div>
         </div>
 
+        <!-- SCREEN 4: RESULT DASHBOARD -->
         <div id="scr-result" class="screen">
             <div class="card" style="text-align: center;">
                 <h2 style="color: var(--success);">Test Completed successfully!</h2>
@@ -177,7 +197,6 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let isLoginMode = true;
         let currentMockId = null;
         let activeQuestions = [];
         let userResponses = {}; 
@@ -192,39 +211,34 @@
             if(screenId === 'scr-dashboard') loadAvailableMocks();
         }
 
-        function toggleAuthMode() {
-            isLoginMode = !isLoginMode;
-            document.getElementById('auth-title').innerText = isLoginMode ? "Operation Baaz Login" : "Create Student Profile";
-            document.getElementById('name-group').style.display = isLoginMode ? "none" : "block";
-            document.getElementById('btn-auth-submit').innerText = isLoginMode ? "Login" : "Register Profile";
-            document.getElementById('auth-toggle').innerText = isLoginMode ? "Don't have an account? Register" : "Already registered? Login";
-        }
-
-        function handleAuth() {
-            const email = document.getElementById('auth-email').value.trim();
-            const pass = document.getElementById('auth-pass').value;
-            const name = document.getElementById('auth-name').value.trim();
-
+        function handleLoginDirect() {
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value;
             if(!email || !pass) return alert('Fill credentials fields!');
 
-            if(isLoginMode) {
-                auth.signInWithEmailAndPassword(email, pass)
-                    .then(res => { showScreen('scr-dashboard'); })
-                    .catch(err => alert(err.message));
-            } else {
-                if(!name) return alert('Name field missing!');
-                auth.createUserWithEmailAndPassword(email, pass)
-                    .then(res => {
-                        db.collection('users').doc(res.user.uid).set({
-                            name: name,
-                            email: email,
-                            role: 'student',
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                        showScreen('scr-dashboard');
-                    })
-                    .catch(err => alert(err.message));
-            }
+            auth.signInWithEmailAndPassword(email, pass)
+                .then(res => { showScreen('scr-dashboard'); })
+                .catch(err => alert(err.message));
+        }
+
+        function handleRegisterDirect() {
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const pass = document.getElementById('reg-pass').value;
+
+            if(!name || !email || !pass) return alert('Fill all fields for registration!');
+
+            auth.createUserWithEmailAndPassword(email, pass)
+                .then(res => {
+                    db.collection('users').doc(res.user.uid).set({
+                        name: name,
+                        email: email,
+                        role: 'student',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    showScreen('scr-dashboard');
+                })
+                .catch(err => alert(err.message));
         }
 
         auth.onAuthStateChanged(user => {
@@ -240,4 +254,184 @@
 
         function logout() { auth.signOut().then(() => showScreen('scr-auth')); }
 
-        function loadAvailable
+        function loadAvailableMocks() {
+            const container = document.getElementById('mock-list-container');
+            container.innerHTML = "<p>Scanning cloud deployment for tests...</p>";
+
+            db.collection('mocks').where('status', '==', 'active').get().then(snapshot => {
+                if(snapshot.empty) {
+                    container.innerHTML = "<p>No active tests distributed yet.</p>";
+                    return;
+                }
+                container.innerHTML = "";
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    container.innerHTML += `
+                        <div class="card mock-item flex-between">
+                            <div>
+                                <h3>${data.title}</h3>
+                                p style="margin:0;">Subject: ${data.subject} | Duration: ${data.timer} Mins</p>
+                            </div>
+                            <button class="btn" style="width:auto; padding:10px 20px;" onclick="startMockExam('${doc.id}')">Start</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function startMockExam(mockId) {
+            currentMockId = mockId;
+            userResponses = {};
+            currentQIndex = 0;
+            
+            db.collection('mocks').doc(mockId).get().then(doc => {
+                activeMockConfig = doc.data();
+                document.getElementById('quiz-title').innerText = activeMockConfig.title;
+                document.getElementById('quiz-subject').innerText = `Subject: ${activeMockConfig.subject}`;
+                document.getElementById('marking-label').innerText = `Correct: +${activeMockConfig.posMark || 3} | Neg: -${activeMockConfig.negMark || 1}`;
+                secondsLeft = parseInt(activeMockConfig.timer) * 60;
+                
+                db.collection('questions').where('mockId', '==', mockId).get().then(qSnap => {
+                    if(qSnap.empty) return alert('This mock test contains no questions.');
+                    activeQuestions = [];
+                    qSnap.forEach(qDoc => {
+                        activeQuestions.push({id: qDoc.id, ...qDoc.data()});
+                    });
+                    
+                    initQuizTimer();
+                    renderQuestion();
+                    showScreen('scr-quiz');
+                });
+            });
+        }
+
+        function initQuizTimer() {
+            clearInterval(examTimerInterval);
+            const timerDisplay = document.getElementById('quiz-timer');
+            
+            examTimerInterval = setInterval(() => {
+                if(secondsLeft <= 0) {
+                    clearInterval(examTimerInterval);
+                    alert('Time limit expired! Auto submitting test...');
+                    evaluateAndSubmitQuiz();
+                } else {
+                    secondsLeft--;
+                    const mins = Math.floor(secondsLeft / 60);
+                    const secs = secondsLeft % 60;
+                    timerDisplay.innerText = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+                }
+            }, 1000);
+        }
+
+        function renderQuestion() {
+            if(activeQuestions.length === 0) return;
+            const q = activeQuestions[currentQIndex];
+            
+            document.getElementById('q-number-label').innerText = `Question ${currentQIndex + 1} of ${activeQuestions.length}`;
+            document.getElementById('question-text').innerText = q.text;
+            
+            const optContainer = document.getElementById('options-container');
+            optContainer.innerHTML = "";
+            
+            q.options.forEach((opt, idx) => {
+                const isSelected = userResponses[q.id] === idx;
+                optContainer.innerHTML += `
+                    <div class="option-card ${isSelected ? 'selected' : ''}" onclick="selectUserOption(${idx})">
+                        <strong>${String.fromCharCode(65 + idx)}.</strong> ${opt}
+                    </div>
+                `;
+            });
+
+            document.getElementById('next-btn').innerText = (currentQIndex === activeQuestions.length - 1) ? "Finish" : "Next";
+            renderNavGrid();
+        }
+
+        function selectUserOption(index) {
+            const q = activeQuestions[currentQIndex];
+            userResponses[q.id] = index;
+            renderQuestion();
+        }
+
+        function nextQuestion() {
+            if(currentQIndex < activeQuestions.length - 1) {
+                currentQIndex++;
+                renderQuestion();
+            } else {
+                confirmSubmitQuiz();
+            }
+        }
+
+        function prevQuestion() {
+            if(currentQIndex > 0) {
+                currentQIndex--;
+                renderQuestion();
+            }
+        }
+
+        function renderNavGrid() {
+            const grid = document.getElementById('question-nav-grid');
+            grid.innerHTML = "";
+            activeQuestions.forEach((q, idx) => {
+                const isAnswered = userResponses[q.id] !== undefined;
+                const isCurrent = idx === currentQIndex;
+                grid.innerHTML += `
+                    <div class="nav-num ${isAnswered ? 'answered' : ''} ${isCurrent ? 'current' : ''}" onclick="jumpToQuestion(${idx})">
+                        ${idx + 1}
+                    </div>
+                `;
+            });
+        }
+
+        function jumpToQuestion(idx) {
+            currentQIndex = idx;
+            renderQuestion();
+        }
+
+        function confirmSubmitQuiz() {
+            if(confirm("Are you sure you want to end this test?")) {
+                evaluateAndSubmitQuiz();
+            }
+        }
+
+        function evaluateAndSubmitQuiz() {
+            clearInterval(examTimerInterval);
+            let score = 0;
+            let correctCount = 0;
+            let wrongCount = 0;
+
+            const pos = parseFloat(activeMockConfig.posMark || 3);
+            const neg = parseFloat(activeMockConfig.negMark || 1);
+
+            activeQuestions.forEach(q => {
+                const userAns = userResponses[q.id];
+                if(userAns !== undefined) {
+                    if(userAns === parseInt(q.correct)) {
+                        correctCount++;
+                        score += pos;
+                    } else {
+                        wrongCount++;
+                        score -= neg;
+                    }
+                }
+            });
+
+            const resultPayload = {
+                uid: auth.currentUser.uid,
+                mockId: currentMockId,
+                mockTitle: activeMockConfig.title,
+                score: score,
+                correct: correctCount,
+                wrong: wrongCount,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            db.collection('results').add(resultPayload).then(() => {
+                document.getElementById('res-score').innerText = `${score} Marks`;
+                document.getElementById('res-correct').innerText = correctCount;
+                document.getElementById('res-wrong').innerText = wrongCount;
+                showScreen('scr-result');
+            });
+        }
+    </script>
+</body>
+</html>
