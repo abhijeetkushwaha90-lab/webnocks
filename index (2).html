@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Operation Baaz - Mock Test Portal</title>
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -30,13 +31,11 @@
         h1, h2, h3 { margin-bottom: 15px; font-weight: 600; color: #fff; }
         p { color: var(--muted); margin-bottom: 15px; font-size: 0.95rem; }
 
-        /* Forms */
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: var(--muted); text-transform: uppercase; }
         input, select { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: #fff; outline: none; font-size: 1rem; }
         input:focus { border-color: var(--accent); }
 
-        /* Buttons */
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--accent); color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; display: inline-block; text-align: center; text-decoration: none; }
         .btn:hover { background: var(--accent-hover); }
         .btn-sec { background: transparent; border: 1px solid var(--border); color: var(--text); }
@@ -44,23 +43,19 @@
         .btn-danger { background: var(--danger); }
         .btn-danger:hover { background: #dc2626; }
 
-        /* Utilities */
         .screen { display: none; }
         .screen.active { display: block; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
-        /* Dashboard Specific */
         .mock-item { border-left: 4px solid var(--accent); background: rgba(255,255,255,0.02); padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 10px; }
         
-        /* Quiz Engine */
         .quiz-header { position: sticky; top: 0; background: var(--bg); padding: 10px 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; z-index: 10; }
         .timer { font-size: 1.2rem; font-weight: bold; color: #f59e0b; font-family: monospace; }
         .option-card { background: var(--bg); border: 1px solid var(--border); padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s; }
         .option-card:hover { border-color: var(--accent); background: rgba(37,99,235,0.05); }
         .option-card.selected { border-color: var(--accent); background: var(--accent); color: white; }
         
-        /* Navigation Grid for mobile */
         .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 8px; margin-top: 20px; max-height: 150px; overflow-y: auto; padding: 5px; }
         .nav-num { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
         .nav-num.answered { background: var(--success); border-color: var(--success); }
@@ -76,6 +71,7 @@
 
     <div class="container">
         
+        <!-- SCREEN 1: AUTHENTICATION -->
         <div id="scr-auth" class="screen active">
             <div class="card">
                 <h2 id="auth-title">Operation Baaz Login</h2>
@@ -101,6 +97,7 @@
             </div>
         </div>
 
+        <!-- SCREEN 2: STUDENT DASHBOARD -->
         <div id="scr-dashboard" class="screen">
             <div class="card flex-between">
                 <div>
@@ -116,6 +113,7 @@
             </div>
         </div>
 
+        <!-- SCREEN 3: MOCK QUIZ ENGINE -->
         <div id="scr-quiz" class="screen">
             <div class="quiz-header flex-between">
                 <div>
@@ -130,10 +128,9 @@
                     <span id="q-number-label">Question 1</span>
                     <span id="marking-label">Marks: +3 | Neg: -1</span>
                 </div>
-                h3 id="question-text" style="font-size:1.1rem; line-height:1.4; margin-bottom:20px;">Question text will load here?</h3>
+                <h3 id="question-text" style="font-size:1.1rem; line-height:1.4; margin-bottom:20px;">Question text will load here?</h3>
                 
-                <div id="options-container">
-                    </div>
+                <div id="options-container"></div>
 
                 <div class="grid-2" style="margin-top:20px;">
                     <button class="btn btn-sec" onclick="prevQuestion()">Previous</button>
@@ -141,11 +138,11 @@
                 </div>
                 <button class="btn btn-danger" style="margin-top:10px;" onclick="confirmSubmitQuiz()">Submit Test Paper</button>
                 
-                <div class="nav-grid" id="question-nav-grid">
-                    </div>
+                <div class="nav-grid" id="question-nav-grid"></div>
             </div>
         </div>
 
+        <!-- SCREEN 4: RESULT DASHBOARD -->
         <div id="scr-result" class="screen">
             <div class="card" style="text-align: center;">
                 <h2 style="color: var(--success);">Test Completed successfully!</h2>
@@ -171,7 +168,6 @@
     </div>
 
     <script>
-        // FIREBASE REAL CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyB0eLSNjBXkjMgtqe3jgOdhNVTu8F0x_14",
             authDomain: "operation-baaz.firebaseapp.com",
@@ -221,7 +217,7 @@
                     .then(res => { showScreen('scr-dashboard'); })
                     .catch(err => alert(err.message));
             } else {
-                if(!name) return alert('Name context field missing!');
+                if(!name) return alert('Name field missing!');
                 auth.createUserWithEmailAndPassword(email, pass)
                     .then(res => {
                         db.collection('users').doc(res.user.uid).set({
@@ -287,7 +283,7 @@
                 secondsLeft = parseInt(activeMockConfig.timer) * 60;
                 
                 db.collection('questions').where('mockId', '==', mockId).get().then(qSnap => {
-                    if(qSnap.empty) return alert('This mock test contains no question assets yet.');
+                    if(qSnap.empty) return alert('This mock test contains no questions.');
                     activeQuestions = [];
                     qSnap.forEach(qDoc => {
                         activeQuestions.push({id: qDoc.id, ...qDoc.data()});
@@ -307,7 +303,7 @@
             examTimerInterval = setInterval(() => {
                 if(secondsLeft <= 0) {
                     clearInterval(examTimerInterval);
-                    alert('Time limit expired! Auto submitting test data...');
+                    alert('Time limit expired! Auto submitting test...');
                     evaluateAndSubmitQuiz();
                 } else {
                     secondsLeft--;
@@ -383,7 +379,7 @@
         }
 
         function confirmSubmitQuiz() {
-            if(confirm("Are you absolutely sure you want to end this evaluation session?")) {
+            if(confirm("Are you sure you want to end this test?")) {
                 evaluateAndSubmitQuiz();
             }
         }
